@@ -36,9 +36,10 @@ class PickAndPlace(Task):
             body_name="object",
             half_extents=np.ones(3) * self.object_size / 2,
             mass=1.0,
-            position=np.array([0.0, 0.0, self.object_size / 2]),
+            position=np.array([0.0, 0.0, 0.0]),
             rgba_color=np.array([0.1, 0.9, 0.1, 1.0]),
         )
+        # self.pmin, self.pmax = self.get_AABB() # center at (0,0,0)
         self.sim.create_box(
             body_name="target",
             half_extents=np.ones(3) * self.object_size / 2,
@@ -51,11 +52,13 @@ class PickAndPlace(Task):
     def get_obs(self) -> np.ndarray:
         # position, rotation of the object
         object_position = self.sim.get_base_position("object")
-        object_rotation = self.sim.get_base_rotation("object")
-        object_velocity = self.sim.get_base_velocity("object")
-        object_angular_velocity = self.sim.get_base_angular_velocity("object")
-        observation = np.concatenate([object_position, object_rotation, object_velocity, object_angular_velocity])
+        # object_rotation = self.sim.get_base_rotation("object")
+        # object_velocity = self.sim.get_base_velocity("object")
+        # object_angular_velocity = self.sim.get_base_angular_velocity("object")
+        # observation = np.concatenate([object_position, object_rotation, object_velocity, object_angular_velocity])
+        observation = object_position.copy()
         return observation
+    
 
     def get_achieved_goal(self) -> np.ndarray:
         object_position = np.array(self.sim.get_base_position("object"))
@@ -66,6 +69,7 @@ class PickAndPlace(Task):
         object_position = self._sample_object()
         self.sim.set_base_pose("target", self.goal, np.array([0.0, 0.0, 0.0, 1.0]))
         self.sim.set_base_pose("object", object_position, np.array([0.0, 0.0, 0.0, 1.0]))
+        
 
     def _sample_goal(self) -> np.ndarray:
         """Sample a goal."""
@@ -93,3 +97,10 @@ class PickAndPlace(Task):
             return -np.array(d > self.distance_threshold, dtype=np.float32)
         else:
             return -d.astype(np.float32)
+        
+    
+    def get_OBB_box(self):
+        pass
+
+        
+

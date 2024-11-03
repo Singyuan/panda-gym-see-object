@@ -97,6 +97,7 @@ class PandaPickAndPlaceEnv(RobotTaskEnv):
         render_yaw: float = 45,
         render_pitch: float = -30,
         render_roll: float = 0,
+        image_shot: bool = False,
     ) -> None:
         sim = PyBullet(render_mode=render_mode, renderer=renderer)
         robot = Panda(sim, block_gripper=False, base_position=np.array([-0.6, 0.0, 0.0]), control_type=control_type)
@@ -111,6 +112,7 @@ class PandaPickAndPlaceEnv(RobotTaskEnv):
             render_yaw=render_yaw,
             render_pitch=render_pitch,
             render_roll=render_roll,
+            image_shot=image_shot,
         )
 
 

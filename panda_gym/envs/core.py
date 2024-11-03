@@ -7,7 +7,9 @@ from gymnasium import spaces
 from gymnasium.utils import seeding
 
 from panda_gym.pybullet import PyBullet
-
+from panda_gym.pixel_2_world.camera import Camera, make_obs
+import pybullet as p
+from matplotlib import pyplot as plt
 
 class PyBulletRobot(ABC):
     """Base class for robot env.
@@ -193,6 +195,10 @@ class Task(ABC):
     def compute_reward(self, achieved_goal: np.ndarray, desired_goal: np.ndarray, info: Dict[str, Any] = {}) -> np.ndarray:
         """Compute reward associated to the achieved and the desired goal."""
 
+    @abstractmethod
+    def get_OBB_box(self):
+        """pass"""
+
 
 class RobotTaskEnv(gym.Env):
     """Robotic task goal env, as the junction of a task and a robot.
@@ -223,6 +229,7 @@ class RobotTaskEnv(gym.Env):
         render_yaw: float = 45,
         render_pitch: float = -30,
         render_roll: float = 0,
+        image_shot: bool = False,
     ) -> None:
         assert robot.sim == task.sim, "The robot and the task must belong to the same simulation."
         self.sim = robot.sim
@@ -230,17 +237,29 @@ class RobotTaskEnv(gym.Env):
         self.metadata["render_fps"] = 1 / self.sim.dt
         self.robot = robot
         self.task = task
+        self.image_shot = image_shot
         observation, _ = self.reset()  # required for init; seed can be changed later
         observation_shape = observation["observation"].shape
         achieved_goal_shape = observation["achieved_goal"].shape
         desired_goal_shape = observation["desired_goal"].shape
-        self.observation_space = spaces.Dict(
-            dict(
-                observation=spaces.Box(-10.0, 10.0, shape=observation_shape, dtype=np.float32),
-                desired_goal=spaces.Box(-10.0, 10.0, shape=desired_goal_shape, dtype=np.float32),
-                achieved_goal=spaces.Box(-10.0, 10.0, shape=achieved_goal_shape, dtype=np.float32),
+        if self.image_shot:
+            image_shape = observation["image"].shape
+            self.observation_space = spaces.Dict(
+                dict(
+                    observation=spaces.Box(-10.0, 10.0, shape=observation_shape, dtype=np.float32),
+                    desired_goal=spaces.Box(-10.0, 10.0, shape=desired_goal_shape, dtype=np.float32),
+                    achieved_goal=spaces.Box(-10.0, 10.0, shape=achieved_goal_shape, dtype=np.float32),
+                    image=spaces.Box(0, 255, shape=image_shape, dtype=np.uint8)
+                )
             )
-        )
+        else:
+            self.observation_space = spaces.Dict(
+                dict(
+                    observation=spaces.Box(-10.0, 10.0, shape=observation_shape, dtype=np.float32),
+                    desired_goal=spaces.Box(-10.0, 10.0, shape=desired_goal_shape, dtype=np.float32),
+                    achieved_goal=spaces.Box(-10.0, 10.0, shape=achieved_goal_shape, dtype=np.float32),
+                )
+            )
         self.action_space = self.robot.action_space
         self.compute_reward = self.task.compute_reward
         self._saved_goal = dict()  # For state saving and restoring
@@ -261,17 +280,26 @@ class RobotTaskEnv(gym.Env):
                 yaw=self.render_yaw,
                 pitch=self.render_pitch,
             )
+        self.rgb_img = None
 
     def _get_obs(self) -> Dict[str, np.ndarray]:
         robot_obs = self.robot.get_obs().astype(np.float32)  # robot state
         task_obs = self.task.get_obs().astype(np.float32)  # object position, velocity, etc...
         observation = np.concatenate([robot_obs, task_obs])
         achieved_goal = self.task.get_achieved_goal().astype(np.float32)
-        return {
-            "observation": observation,
-            "achieved_goal": achieved_goal,
-            "desired_goal": self.task.get_goal().astype(np.float32),
-        }
+        if self.image_shot:
+            return {
+                "observation": observation,
+                "achieved_goal": achieved_goal,
+                "desired_goal": self.task.get_goal().astype(np.float32),
+                "image" : self.rgb_img,
+            }
+        else:
+                return {
+                "observation": observation,
+                "achieved_goal": achieved_goal,
+                "desired_goal": self.task.get_goal().astype(np.float32),
+            }
 
     def reset(
         self, seed: Optional[int] = None, options: Optional[dict] = None
@@ -281,8 +309,14 @@ class RobotTaskEnv(gym.Env):
         with self.sim.no_rendering():
             self.robot.reset()
             self.task.reset()
+        # take a photo
+        if self.image_shot:
+            rgb_img, _ = self._ceate_camera()
+            self.rgb_img = rgb_img[::10, ::10, :].astype(np.uint8)
         observation = self._get_obs()
         info = {"is_success": self.task.is_success(observation["achieved_goal"], self.task.get_goal())}
+        # plt.imshow(rgb_img, interpolation='nearest')
+        # plt.show()
         return observation, info
 
     def save_state(self) -> int:
@@ -344,3 +378,21 @@ class RobotTaskEnv(gym.Env):
             pitch=self.render_pitch,
             roll=self.render_roll,
         )
+    
+    def _ceate_camera(self):
+        my_camera = Camera(image_size=(2280,3000), near=0.01, far=1., fov=56.8)
+        init_p, _ = p.getLinkState(self.sim._bodies_idx["panda"], 8)[:2]
+        view_matrix = p.computeViewMatrixFromYawPitchRoll(cameraTargetPosition=[0.3,0.0,0.35],
+                                                          distance=0.1, yaw=90,
+                                                          pitch=-50,
+                                                          roll=0,
+                                                          upAxisIndex=2)
+        rgb_obs, depth_obs , _ = make_obs(camera = my_camera, view_matrix=view_matrix)
+        proj_matrix = p.computeProjectionMatrixFOV(fov=56.8, aspect=float(3000)/2280, nearVal=0.038, farVal=1)
+
+        cam_parms = {}
+        cam_parms['intrinsic_matrix'] = my_camera.intrinsic_matrix
+        cam_parms['depth_img'] = depth_obs
+        cam_parms['proj_matrix'] = np.array(proj_matrix).reshape((4, 4))
+        cam_parms['view_matrix'] = view_matrix
+        return rgb_obs, cam_parms
