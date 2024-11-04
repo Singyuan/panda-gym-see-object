@@ -1,16 +1,19 @@
 # panda-gym-see-object
+Add two new environment:
+- **Image Shot**: `PandaPickAndPlaceShot-v3`
+- **Oriented Bounding Box (OBB)**: `PandaPickAndPlace6d-v3`
 
 # panda-gym
 
 Set of robotic environments based on PyBullet physics engine and gymnasium.
-
+<!-- 
 [![PyPI version](https://img.shields.io/pypi/v/panda-gym.svg?logo=pypi&logoColor=FFE873)](https://pypi.org/project/panda-gym/)
 [![Downloads](https://static.pepy.tech/badge/panda-gym)](https://pepy.tech/project/panda-gym)
 [![GitHub](https://img.shields.io/github/license/qgallouedec/panda-gym.svg)](LICENSE.txt)
 [![build](https://github.com/qgallouedec/panda-gym/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/qgallouedec/panda-gym/actions/workflows/build.yml)
 [![codecov](https://codecov.io/gh/qgallouedec/panda-gym/branch/master/graph/badge.svg?token=pv0VdsXByP)](https://codecov.io/gh/qgallouedec/panda-gym)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![arXiv](https://img.shields.io/badge/cs.LG-arXiv%3A2106.13687-B31B1B.svg)](https://arxiv.org/abs/2106.13687)
+[![arXiv](https://img.shields.io/badge/cs.LG-arXiv%3A2106.13687-B31B1B.svg)](https://arxiv.org/abs/2106.13687) -->
 
 ## Documentation
 

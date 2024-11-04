@@ -3,8 +3,8 @@ import panda_gym
 import time 
 
 # env = gym.make("PandaPickAndPlace-v3", render_mode="human")
-env = gym.make("PandaPickAndPlaceShot-v3", render_mode="human")
-# env = gym.make("PandaPickAndPlace6d-v3", render_mode="human")
+# env = gym.make("PandaPickAndPlaceShot-v3", render_mode="human")
+env = gym.make("PandaPickAndPlace6d-v3", render_mode="human")
 
 observation, info = env.reset()
 

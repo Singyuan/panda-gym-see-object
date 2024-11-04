@@ -32,11 +32,11 @@ register(
         )
 ENV_IDS.append(env_id)
 
-# env_id = f"PandaPickAndPlace6d-v3"
-# register(
-#         id=env_id,
-#         entry_point=f"panda_gym.envs:PandaPickAndPlace6dEnv",
-#         kwargs={"reward_type": "sparse", "control_type": "ee", "image_shot": False},
-#         max_episode_steps=50,
-#         )
-# ENV_IDS.append(env_id)
+env_id = f"PandaPickAndPlace6d-v3"
+register(
+        id=env_id,
+        entry_point=f"panda_gym.envs:PandaPickAndPlace6dEnv",
+        kwargs={"reward_type": "sparse", "control_type": "ee", "image_shot": False},
+        max_episode_steps=50,
+        )
+ENV_IDS.append(env_id)

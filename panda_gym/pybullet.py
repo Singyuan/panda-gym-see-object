@@ -667,3 +667,12 @@ class PyBullet:
             linkIndex=link,
             spinningFriction=spinning_friction,
         )
+
+    
+    def get_AABB(self, body: str):
+        pmin, pmax = self.physics_client.getAABB(self._bodies_idx[body])
+        return np.asarray(pmin), np.asarray(pmax)
+    
+    def get_matrix_from_quaternion(self, cubeOrn):
+        cubeRotMatrix = p.getMatrixFromQuaternion(cubeOrn)
+        return np.array(cubeRotMatrix).reshape(3, 3)
