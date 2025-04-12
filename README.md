@@ -1,8 +1,20 @@
-# panda-gym-see-object
+# panda-gym-see-object (Enhanced Version)
+This project is a fork of [qgallouedec/panda-gym](https://github.com/qgallouedec/panda-gym).  
+I made two improvements and additions based on the original work.
+
+## 🔧 Updates & Enhancements
 Add two new environment:
 - **Image Shot**: `PandaPickAndPlaceShot-v3`
 - **Oriented Bounding Box (OBB)**: `PandaPickAndPlace6d-v3`
 
+Please see this [slides](https://singyuan.github.io/pdf/projects/Delta/pnp.pdf) for more details.
+
+
+## 🧱 Based On
+Original project: [qgallouedec/panda-gym](https://github.com/qgallouedec/panda-gym)
+Original description below:
+
+---
 # panda-gym
 
 Set of robotic environments based on PyBullet physics engine and gymnasium.
